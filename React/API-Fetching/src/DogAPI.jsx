@@ -1,45 +1,62 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import axios from 'axios'
 
 const DogAPI = () => {
-    const [breeds, setbreeds] = useState([]);
+    const [breeds, setBreeds] = useState([]);
     const [images, setImages] = useState({});
+    const [search, setSearch] = useState("");
+
+    useEffect(() => {
+        breeds.map((breed) => {
+            return getImages(breed.id, breed.reference_image_id);
+        });
+    }, [breeds]);
 
     const fetchData = async () => {
-        const response = await axios.get('https://api.thedogapi.com/v1/breeds');
+        const response = await axios.get('https://api.thedogapi.com/v1/breeds?limit=100&page=0');
         console.log(response.data);
-        setbreeds(response.data);
+        setBreeds(response.data);
     }
 
-    const getImage = async (breedId, imageUrl) => {
-        const response = await axios.get(`https://api.thedogapi.com/v1/images/${imageUrl}`);
+    const searchByBreed = async () => {
+        const response = await axios.get(`https://api.thedogapi.com/v1/breeds/search?q=${search}`);
+        console.log(response.data);
+        setBreeds(response.data);
+    }
+
+    const getImages = async (breedId, imageId) => {
+        const response = await axios.get(`https://api.thedogapi.com/v1/images/${imageId}`);
         console.log(response.data);
         const url = response.data.url;
-        setImages((prev) => ({
-            ...prev, [breedId]: url
-        }));
+        setImages((prev) => {
+            return { ...prev, [breedId]: url };
+        });
     }
 
-    const showImages = async () => {
-        console.log(images);
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        searchByBreed();
+        setSearch("");
     }
 
     return (
         <div>
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <button onClick={(e) => handleSubmit(e)}>Search</button>
             <button onClick={() => fetchData()}>Get Data</button>
-            <button onClick={showImages}>Click</button>
-
             {breeds && breeds.map((breed) => {
                 return <div key={breed.id}>
                     <h1>{breed.name}</h1>
-                    <button onClick={() => getImage(breed.id, breed.reference_image_id)}>
-                        Show Dog Image
-                    </button>
-                    {images[breed.id] && (
-                        <img src={images[breed.id]} alt={breed.name} width="250"
-                            style={{ display: 'block', marginTop: '10px', borderRadius: '6px' }}
-                        />
-                    )}
+                    <img
+                        src={images[breed.id]}
+                        style={{
+                            display: 'block',
+                            marginTop: '10px',
+                            borderRadius: '12px',
+                            width: '250px',
+                            height: 'auto',
+                        }}
+                    />
                     <p>{breed.breed_for}</p>
                     <p>{breed.breed_group}</p>
                     <p>{breed.life_span}</p>
@@ -49,7 +66,6 @@ const DogAPI = () => {
                     <p>{breed.weight.metric}</p>
                 </div>
             })}
-
         </div>
     )
 }
