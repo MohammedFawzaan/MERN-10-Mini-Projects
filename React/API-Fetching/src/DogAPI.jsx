@@ -5,6 +5,7 @@ const DogAPI = () => {
     const [breeds, setBreeds] = useState([]);
     const [images, setImages] = useState({});
     const [search, setSearch] = useState("");
+    const [error, setError] = useState("");
 
     useEffect(() => {
         breeds.map((breed) => {
@@ -35,15 +36,21 @@ const DogAPI = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        searchByBreed();
-        setSearch("");
+        if(search.trim()) {
+            searchByBreed();
+        } else {
+            setError("Please Enter a valid search term");
+        }
     }
 
     return (
         <div>
+            <h1>Dogs Information</h1>
             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} />
             <button onClick={(e) => handleSubmit(e)}>Search</button>
             <button onClick={() => fetchData()}>Get Data</button>
+            <p>{search}</p>
+            {error && <p>{error}</p>}
             {breeds && breeds.map((breed) => {
                 return <div key={breed.id}>
                     <h1>{breed.name}</h1>

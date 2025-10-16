@@ -5,7 +5,7 @@ function App() {
 
   return (
     <div>
-      {/* <MovieFinder /> */}
+      <MovieFinder />
       <DogAPI />
     </div>
   )
